@@ -1,6 +1,7 @@
 # manage-docker
 
-A unified Python-based management system for Docker Compose projects. Provides common commands with project-specific customization via plugins.
+A unified Python-based management system for Docker Compose projects. Provides
+common commands with project-specific customization via plugins.
 
 ## Installation
 
