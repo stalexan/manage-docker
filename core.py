@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Shared Docker Container Management Script
+Docker Container Management Script
 
 Provides common commands for managing Docker Compose projects with plugin support.
 Each project can customize behavior through a manage_plugins.py file.
