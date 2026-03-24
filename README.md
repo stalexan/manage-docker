@@ -5,17 +5,17 @@ common commands with project-specific customization via plugins.
 
 ## Installation
 
-This module is designed to be used as a **git submodule** in your project:
+Clone the repository to a location of your choice (e.g. `~/.local/share/manage-docker`):
 
 ```bash
-# Add as a submodule to your project
-git submodule add https://github.com/stalexan/manage-docker.git scripts/manage
+git clone https://github.com/stalexan/manage-docker.git ~/.local/share/manage-docker
+```
 
-# Or if cloning a project that uses this submodule:
-git clone --recursive https://github.com/stalexan/your-project.git
+Set the `MANAGE_DOCKER_HOME` environment variable to point to the clone. Add this to
+your `~/.bashrc` (or equivalent):
 
-# Or if you already cloned without --recursive:
-git submodule update --init
+```bash
+export MANAGE_DOCKER_HOME="$HOME/.local/share/manage-docker"
 ```
 
 ## Quick Start
@@ -32,14 +32,16 @@ Each project has its own entry point that loads the shared core:
 ## Architecture
 
 ```
+~/.local/share/manage-docker/   # Shared install (MANAGE_DOCKER_HOME)
+├── manage/
+│   ├── __init__.py
+│   └── core.py
+└── README.md
+
 your-project/
 ├── scripts/
-│   ├── manage/              # This repo as a submodule
-│   │   ├── __init__.py
-│   │   ├── core.py
-│   │   └── README.md
-│   ├── manage.py            # Entry point (imports from manage submodule)
-│   └── manage_plugins.py    # Project-specific configuration and commands
+│   ├── manage.py               # Entry point (imports from shared install)
+│   └── manage_plugins.py       # Project-specific configuration and commands
 └── docker-compose.yml
 ```
 
@@ -73,14 +75,7 @@ ENVIRONMENT=prod ./scripts/manage.py up
 
 ## Creating a New Project
 
-### 1. Add the Submodule
-
-```bash
-cd your-project
-git submodule add https://github.com/stalexan/manage-docker.git scripts/manage
-```
-
-### 2. Create Entry Point
+### 1. Create Entry Point
 
 Create `scripts/manage.py`:
 
@@ -88,12 +83,16 @@ Create `scripts/manage.py`:
 #!/usr/bin/env python3
 """Manage Docker containers for my-project."""
 
+import os
 import sys
 from pathlib import Path
 
-# Add manage submodule to path
-script_dir = Path(__file__).resolve().parent
-sys.path.insert(0, str(script_dir))
+# Find shared manage-docker install
+manage_home = os.environ.get("MANAGE_DOCKER_HOME")
+if not manage_home:
+    print("Error: MANAGE_DOCKER_HOME not set", file=sys.stderr)
+    sys.exit(1)
+sys.path.insert(0, manage_home)
 
 from manage import main
 
@@ -106,7 +105,7 @@ Make it executable:
 chmod +x scripts/manage.py
 ```
 
-### 3. Create Plugin Configuration
+### 2. Create Plugin Configuration
 
 Create `scripts/manage_plugins.py`:
 
@@ -124,7 +123,7 @@ config = ProjectConfig(
 )
 ```
 
-### 4. Add Custom Commands (Optional)
+### 3. Add Custom Commands (Optional)
 
 ```python
 from manage import (
